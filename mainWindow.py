@@ -143,7 +143,7 @@ class Ui_MainWindow(object):
         self.logs_text.setGeometry(QtCore.QRect(620, 170, 411, 391))
         self.logs_text.setObjectName("logs_text")
         self.result_text = QtWidgets.QTextEdit(self.centralwidget)
-        self.result_text.setGeometry(QtCore.QRect(620, 601, 411, 101))
+        self.result_text.setGeometry(QtCore.QRect(620, 601, 411, 41))
         self.result_text.setObjectName("result_text")
         self.how_to_button = QtWidgets.QPushButton(self.centralwidget)
         self.how_to_button.setGeometry(QtCore.QRect(880, 10, 141, 41))
@@ -153,6 +153,32 @@ class Ui_MainWindow(object):
 
         self.how_to_button.clicked.connect(self.show_help)
 
+        # Próbuje dodać licznik prób: ---------------------------------------------
+        self.widget1 = QtWidgets.QWidget(self.centralwidget)
+        self.widget1.setGeometry(QtCore.QRect(620, 670, 411, 51))
+        self.widget1.setObjectName("widget1")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.widget1)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.tries_label = QtWidgets.QLabel(self.widget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.tries_label.setFont(font)
+        self.tries_label.setAutoFillBackground(False)
+        self.tries_label.setStyleSheet("background-color: rgb(178, 196, 255);")
+        self.tries_label.setObjectName("tries_label")
+        self.horizontalLayout_3.addWidget(self.tries_label)
+        self.tries_spinBox = QtWidgets.QSpinBox(self.widget)
+        self.tries_spinBox.setMinimum(1)
+        self.tries_spinBox.setMaximum(99999)
+        self.tries_spinBox.setSingleStep(5)
+        self.tries_spinBox.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.tries_spinBox.setProperty("value", 100)
+        self.tries_spinBox.setDisplayIntegerBase(10)
+        self.tries_spinBox.setObjectName("tries_spinBox")
+        self.horizontalLayout_3.addWidget(self.tries_spinBox)
+        self.tries_label.raise_()
+        # --------------------------------------------------------------
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(626, 142, 91, 21))
         font = QtGui.QFont()
@@ -199,6 +225,7 @@ class Ui_MainWindow(object):
         self.start_button.setText(_translate("MainWindow", "START"))
         self.how_to_button.setText(_translate("MainWindow", "Jak definiować topologie?"))
         self.label_3.setText(_translate("MainWindow", "Logi"))
+        self.tries_label.setText(_translate("MainWindow", "Liczba prób:"))
 
     def load_topo_from_file(self):
         file_name = QtWidgets.QFileDialog.getOpenFileName()
@@ -268,6 +295,12 @@ class Ui_MainWindow(object):
             print(com.id, end="\t-\t")
         print()
 
+    def log_route(self, route):
+        new_route = []
+        for com in route.route:
+            new_route.append(com.id)
+        self.logs_text.append(f"Route: {new_route}")
+
     @staticmethod
     def get_random_out(topology, number_of_out):
         """
@@ -318,15 +351,17 @@ class Ui_MainWindow(object):
             while random_in == -1:
                 random_in = Ui_MainWindow.get_random_in(topology, inputs)
                 count += 1
-                if count > 60:
+                if count > 70:
                     self.logs_text.append("Routing failed!")
+                    print("Routing failed!")
                     exit("Routing failed!")
 
             while random_out == -1:
                 random_out = Ui_MainWindow.get_random_out(topology, outputs)
                 count += 1
-                if count > 120:
+                if count > 140:
                     self.logs_text.append("Routing failed!")
+                    print("Routing failed!")
                     exit("Routing failed!")
 
             route = Route(random_in, random_out, topology)
@@ -335,16 +370,17 @@ class Ui_MainWindow(object):
                 established_routes.append(new_route)
                 topology = route.change_status(topology)
                 if show_routes:
-                    print(f"Znaleziono trasę między wejściem {new_route.source_input}, a wyjściem {new_route.destination_output}!")
+                    # print(f"Znaleziono trasę między wejściem {new_route.source_input}, a wyjściem {new_route.destination_output}!")
                     self.logs_text.append(f"Znaleziono trasę między wejściem {new_route.source_input}, a wyjściem {new_route.destination_output}!\n")
-                    Ui_MainWindow.display_one_route(new_route)
+                    # Ui_MainWindow.display_one_route(new_route)
+                    self.log_route(new_route)
             else:
                 if show_routes:
                     self.logs_text.append("Nie znaleziono wyjścia!")
-                    print("Nie znaleziono wyjścia!")
+                    # print("Nie znaleziono wyjścia!")
 
         self.logs_text.append("All connections have been established!")
-        print("All connections have been established!")
+        # print("All connections have been established!")
 
     @staticmethod
     def normalize_bar(value):
@@ -371,13 +407,13 @@ class Ui_MainWindow(object):
         bad_events = 0
         self.fail_lcd.display(bad_events)
         self.success_lcd.display(ok_events)
-        algorithm_count = 1000
+        algorithm_count = self.tries_spinBox.value()
         bar_value = 1
 
         for i in range(algorithm_count):
             self.logs_text.append(f"---- Przejście {i} ----")
             bar_value += Ui_MainWindow.normalize_bar(algorithm_count)
-            self.progress_bar.setValue(bar_value)
+            self.progress_bar.setValue(round(bar_value))
             try:
                 route = self.start_algorithm(file, show_routes=True)
                 if route == -1:
@@ -391,7 +427,16 @@ class Ui_MainWindow(object):
                 self.fail_lcd.display(bad_events)
                 print('-' * 80)
         self.logs_text.append(f"All routes established: {ok_events} times. Couldn't establish route: {bad_events} times")
-        print(f"All routes established: {ok_events} times. Couldn't establish route: {bad_events} times")
+
+        # Sprawdzam warunek, czy pole jest blokowalne, tak jak go rozumiem
+        # Czyli: Wystarzy jedno powodzenie, aby pole nazwać nieblokowalnym w szerokim sensie, dla
+        # pewnego algorytmu? U nas jest to randomowo, więc teoretycznie "testujemy różne algorytmy"
+
+        if ok_events > 0:
+            self.result_text.setText("Pole jest nieblokowalne w szerokim sensie, dla pewnego algorytmu zestawiania połączeń")
+        else:
+            self.result_text.setText(f"Dla zadanej próby nie udało się zestawić wszystkich dróg. Liczba prób: {bad_events}")
+        # print(f"All routes established: {ok_events} times. Couldn't establish route: {bad_events} times")
         # --------------------------------------------------------------------------------------------
 
 
