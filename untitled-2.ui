@@ -363,57 +363,62 @@ alternate-background-color: rgb(157, 157, 157);</string>
      <string>Logi</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QLabel" name="tries_label">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>670</y>
-      <width>411</width>
+      <x>621</x>
+      <y>661</y>
+      <width>161</width>
       <height>51</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="tries_label">
-       <property name="font">
-        <font>
-         <pointsize>16</pointsize>
-        </font>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(178, 196, 255);</string>
-       </property>
-       <property name="text">
-        <string>Liczba prób:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="tries_spinBox">
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>999999</number>
-       </property>
-       <property name="singleStep">
-        <number>5</number>
-       </property>
-       <property name="stepType">
-        <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
-       </property>
-       <property name="value">
-        <number>100</number>
-       </property>
-       <property name="displayIntegerBase">
-        <number>10</number>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(178, 196, 255);</string>
+    </property>
+    <property name="text">
+     <string>Liczba prób:</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="tries_spinBox">
+    <property name="geometry">
+     <rect>
+      <x>820</x>
+      <y>670</y>
+      <width>171</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="minimum">
+     <number>1</number>
+    </property>
+    <property name="maximum">
+     <number>999999</number>
+    </property>
+    <property name="singleStep">
+     <number>5</number>
+    </property>
+    <property name="stepType">
+     <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+    </property>
+    <property name="value">
+     <number>100</number>
+    </property>
+    <property name="displayIntegerBase">
+     <number>10</number>
+    </property>
    </widget>
    <zorder>tries_label</zorder>
    <zorder>fail_label</zorder>
