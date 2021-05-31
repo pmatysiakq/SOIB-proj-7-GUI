@@ -1,12 +1,18 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from random import randint
+import copy
 from pkg.Route import Route
 from random import randint
-from Parser import parse_file
+from pkg.Parser import parse_file
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        """
+        Funkcja wygenerowana przez PyQt5.
+
+        Dodane zostały tylko eventy klikania przycisków.
+
+        """
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1043, 762)
         MainWindow.setAutoFillBackground(False)
@@ -143,7 +149,6 @@ class Ui_MainWindow(object):
 
         self.how_to_button.clicked.connect(self.show_help)
 
-        # Dodaję licznik prób: ---------------------------------------------
         self.widget1 = QtWidgets.QWidget(self.centralwidget)
         self.widget1.setGeometry(QtCore.QRect(620, 670, 411, 51))
         self.widget1.setObjectName("widget1")
@@ -168,7 +173,6 @@ class Ui_MainWindow(object):
         self.tries_spinBox.setObjectName("tries_spinBox")
         self.horizontalLayout_3.addWidget(self.tries_spinBox)
         self.tries_label.raise_()
-        # --------------------------------------------------------------
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(626, 142, 91, 21))
         font = QtGui.QFont()
@@ -202,188 +206,140 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
+        """
+        Funkcja wygenerowana przez PyQt5
+
+        """
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.success_label.setText(_translate("MainWindow", "Success:"))
         self.fail_label.setText(_translate("MainWindow", "Fail:"))
         self.info_label.setText(_translate("MainWindow", "SOIB - Projekt nr. 7 - OPTYCZNE POLA KOMUTACYJNE"))
         self.label.setText(_translate("MainWindow",
-                                      "Program sprawdza czy zadane pole komutacyjne, zbudowane z komutatorów 2x2 jest polem nieblokowalnym w szerokim sensie. W celu przeprowadzenia symulacji \"Zdefiniuj topologię\" lub \"Załaduj topologię z pliku\""))
-        self.result_label.setText(_translate("MainWindow", "Wynik symulacji"))
-        self.label_2.setText(_translate("MainWindow", "Nazwa Pliku"))
-        self.topo_from_file_button.setText(_translate("MainWindow", "Załaduj topologię z pliku"))
+                                      "Program sprawdza czy zadane pole komutacyjne, zbudowane z komutatorów 2x2 "
+                                      "jest polem nieblokowalnym. W celu przeprowadzenia symulacji "
+                                      "zdefiniuj topologię lub kliknij przycisk \"Load topology from file\""))
+        self.result_label.setText(_translate("MainWindow", "Simulation Result"))
+        self.label_2.setText(_translate("MainWindow", "File Name: "))
+        self.topo_from_file_button.setText(_translate("MainWindow", "Load topology from file"))
         self.start_button.setText(_translate("MainWindow", "START"))
-        self.how_to_button.setText(_translate("MainWindow", "Jak definiować topologie?"))
+        self.how_to_button.setText(_translate("MainWindow", "How to define topology?"))
         self.label_3.setText(_translate("MainWindow", "Logi"))
         self.tries_label.setText(_translate("MainWindow", "Liczba prób:"))
 
     def load_topo_from_file(self):
+        """
+        ładuje topologię z pliku tekstowego i wyświetla w odpowiednim oknie.
+        """
         file_name = QtWidgets.QFileDialog.getOpenFileName()
         print(file_name[0])
         self.path_textEdit.insert(file_name[0])
-        text = ""
         with open(file=file_name[0], mode='r') as file:
             text = file.read()
             self.topology_textEdit.clear()
         self.topology_textEdit.setText(text)
 
     def start_pressed(self):
-        with open(file="current_topo.txt", mode='w') as file:
+        """
+        Funkcja wywoływana poprzez kliknięciu przycisku `START`.
+
+        Uruchamia funkcję `run_algorithm`, czyli zasadniczą część programu.
+        """
+        with open(file="files/current_topo.txt", mode='w') as file:
             topology_file = self.topology_textEdit.toPlainText()
             file.write(topology_file)
-        Ui_MainWindow.start(self, "current_topo.txt")
+        Ui_MainWindow.run_algorithm(self, "files/current_topo.txt")
 
     def log_route(self, route):
+        """
+        Wyświetla aktualnie obliczoną trase w polu logów.
+        :param route: (Route) trasa do wyświetlenia
+        """
         new_route = []
         for com in route.route:
             new_route.append(com.id)
         self.logs_text.append(f"Route: {new_route}")
 
     @staticmethod
-    def get_random_in(topology, number_of_in):
+    def get_in_out(inputs, outputs):
         """
-        Losuje randomowe wejścia.
+        Na podstawie ilości wejść i wyjść losuje trasy (wejście, wyjście)
 
-        Nie uwzględnia, że niektóre są już zajęte. To jest uwzględnione
-        w głównej funkcji.
-        :param topology: topologia pola komutacyjnego. Lista komutatorów 2x2
-        :param number_of_in: Ilośc wejść w polu komutacyjnym
-        :return: Zwraca numer wejścia
+        :param inputs: (int) Ilość wejść w polu komutacyjnym
+        :param outputs: (int) Ilość wyjść w polu komutacyjnym
+        :return: Zwraca tablice krotek (wejście, wyjście)
         """
-        random_input = randint(1, number_of_in)
-        for com in topology:
-            if com.section == 1:
-                if com.in_1.foreign_output == random_input:
-                    if not com.in_1.is_busy:
-                        return random_input
-                    else:
-                        return -1
-                elif com.in_2.foreign_output == random_input:
-                    if not com.in_2.is_busy:
-                        return random_input
-                    else:
-                        return -1
+        routes = []
+        number_of_routes = min(inputs, outputs)
+        tmp_inputs = []
+        tmp_outputs = []
 
-    @staticmethod
-    def get_random_out(topology, number_of_out):
+        while len(tmp_inputs) < number_of_routes:
+            random_in = randint(1, inputs)
+            if random_in not in tmp_inputs:
+                tmp_inputs.append(random_in)
+
+        while len(tmp_outputs) < number_of_routes:
+            random_out = randint(1, outputs)
+            if random_out not in tmp_outputs:
+                tmp_outputs.append(random_out)
+
+        for i in range(number_of_routes):
+            routes.append((tmp_inputs[i], tmp_outputs[i]))
+        return routes
+
+    def check_if_blocked(self, topology, sections, routes):
         """
-        Losuje randomowe wyjście.
+        Sprawdza czy dane pole komutacyjne jest blokowalne.
 
-        Nie uwzględnia, że niektóre są już zajęte. To jest uwzględnione
-        w głównej funkcji.
-        :param topology: topologia pola komutacyjnego. Lista komutatorów 2x2
-        :param number_of_out: Ilośc wyjść w polu komutacyjnym
-        :return: Zwraca numer wyjścia
+        Jedno przejście ustala, czy pole jest blokowalne dla danego zbioru krotek
+        (wejście, wyjście). Jeżeli da się zestawić wszystkie ścieżki, to pole jest nieblokowalne.
+        :param topology: [*Commutator] Tablica zawierająca komutatory, reprezentujące topologie pola.
+        :param sections: (int) Ilość sekcji w badanym polu komutacyjnym.
+        :param routes: [(a, b)] Tablica tras do zestawienia w formacie (wejście, wyjście).
+        :return: Zwraca `True` jeżeli pole jest blokowalne, `False` w przeciwnym razie.
         """
-        random_output = randint(1, number_of_out)
-        for com in topology:
-            if com.section == topology[-1].section:
-                if int(com.out_1.foreign_input) == random_output:
-                    if not com.out_1.is_busy:
-                        return random_output
-                    else:
-                        return -1
-                elif int(com.out_2.foreign_input) == random_output:
-                    if not com.out_2.is_busy:
-                        return random_output
-                    else:
-                        return -1
+        topo = copy.deepcopy(topology)
+        blocked = False
+        for j in range(30):
+            blocked = False
+            # Dla każdej pary (wejście, wyjście) znajdź ścieżkę
+            for route in routes:
+                input, output = route
+                # Aby mieć pewność, że ścieżka zostanie poprawnie zestawiona powtórz 10 razy
+                for i in range(10):
+                    one_route = Route(input, output, topo)
+                    done_route = one_route.do_routing(sections, topo)
+                    self.log_route(one_route)
+                    # Jeżeli ścieżka została znaleziona dla danego (wejścia, wyjścia)
+                    if done_route != -404:
+                        blocked = False
+                        topo = one_route.change_status(topo)
+                        self.logs_text.append(f"A route has been found between input {input} and "
+                                                              f"exit {output}!")
+                        break
+                # Jeżeli nie udalo się zestawić ścieżki między daną parą (wejście, wyjście) spróbuj od nowa
+                else:
+                    blocked = True
+                    self.logs_text.append(f"The commutation field has been blocked!: {input} - {output}")
 
-    def start_algorithm(self, file, show_routes=False):
+                if blocked:
+                    topo = copy.deepcopy(topology)
+                    break
+            if not blocked:
+                break
+        return blocked
+
+    def run_algorithm(self, file):
         """
-        Wykonuje jedno przejście algorytmu.
+        Główna funkcja uruchamiająca algorytm. Uruchamiana jest poprzez kliknięcie `START`
 
-        Algorytm kończy się, jeżeli wszystkie trasy zostaną zestawione lub
-        gdy wystąpi jakiś wyjątek.
-        :param file: ściężka do pliku z topologią pola komutacyjnego
-        :param show_routes: parametr określający, czy chcemy, aby ścieżki
-        były wyświetlane (True) lub nie (False) podczas wykonuwania algorytmu
-        :return:
+        Funkcja zajmuje się uruchomieniem algorytmu `algorithm_count` razy. Ponadto zajmuje się wyświetlaniem
+        logów w odpowiednim polu. Jedna blokada powoduje przerwanie wykonywanie algorytmu.
+        :param file: ścieżka do pliku z topologią.
         """
-
         topology, inputs, outputs, sections = parse_file(file)
-
-        routes_to_establish = min(inputs, outputs)
-        established_routes = []
-
-        # Zmienne aby sterować powtarzaniem zablokowanej ścieżki
-        path_blocked = False
-        random_in = random_out = -1
-        unblock_tries = 0
-        find_route_tries = 0
-
-        while routes_to_establish > len(established_routes):
-            if not path_blocked:
-                random_in = Ui_MainWindow.get_random_in(topology, inputs)
-                random_out = Ui_MainWindow.get_random_out(topology, outputs)
-            count = 0
-            while random_in == -1:
-                random_in = Ui_MainWindow.get_random_in(topology, inputs)
-                count += 1
-                if count > 70:
-                    self.logs_text.append("Routing failed!")
-                    print("Routing failed!")
-                    exit("Routing failed!")
-
-            while random_out == -1:
-                random_out = Ui_MainWindow.get_random_out(topology, outputs)
-                count += 1
-                if count > 140:
-                    self.logs_text.append("Routing failed!")
-                    print("Routing failed!")
-                    exit("Routing failed!")
-
-            route = Route(random_in, random_out, topology)
-            new_route = route.do_routing(sections, topology)
-            # Sprawdzam czy ścieżka się nie zablokowała
-            if new_route == -404:
-                path_blocked = True
-                unblock_tries += 1
-                if unblock_tries > 300:
-                    self.logs_text.append(f"The commutation field has been blocked: {random_in} - {random_out}")
-                    return -404
-                continue
-            elif new_route == -101:
-                find_route_tries += 1
-                path_blocked = True
-                if unblock_tries == 0 and find_route_tries > 100:
-                    path_blocked = False
-                    continue
-                continue
-            else:
-                path_blocked = False
-                unblock_tries = 0
-            if new_route != -1:
-                established_routes.append(new_route)
-                topology = route.change_status(topology)
-                if show_routes:
-                    self.logs_text.append(f"A route has been found between input {new_route.source_input} and "
-                                          f"exit {new_route.destination_output}!")
-                    self.log_route(new_route)
-            else:
-                if show_routes:
-                    self.logs_text.append("No exit found!")
-
-        self.logs_text.append("All connections have been established!")
-
-    @staticmethod
-    def normalize_bar(value):
-        if value < 100:
-            return 99
-        elif value == 100:
-            return 1
-        else:
-            return 100 / value
-
-    def show_help(self):
-        with open("help.txt", 'r') as file:
-            help_file = file.read()
-        self.logs_text.setPlainText(help_file)
-        self.logs_text.update()
-
-    def start(self, file):
         self.logs_text.setText("START!")
-
         ok_events = 0
         bad_events = 0
         self.fail_lcd.display(bad_events)
@@ -392,36 +348,54 @@ class Ui_MainWindow(object):
         bar_value = 1
 
         for i in range(algorithm_count):
-            self.logs_text.append(f"-------------- Execution: {i} --------------")
+            self.logs_text.append(f"\n-------------- Execution: {i} --------------")
             bar_value += Ui_MainWindow.normalize_bar(algorithm_count)
             self.progress_bar.setValue(round(bar_value))
-            try:
-                route = self.start_algorithm(file, show_routes=True)
-                if route == -404:
-                    bad_events += 1
-                    self.fail_lcd.display(bad_events)
-                    continue
-                if route == -1:
-                    bad_events += 1
-                    self.fail_lcd.display(bad_events)
-                else:
-                    ok_events += 1
-                    self.success_lcd.display(ok_events)
-            except AttributeError:
+            routes = Ui_MainWindow.get_in_out(inputs, outputs)
+            field_blocked = self.check_if_blocked(topology, sections, routes)
+
+            if field_blocked:
                 bad_events += 1
                 self.fail_lcd.display(bad_events)
-                self.logs_text.append('-' * 80)
+                self.progress_bar.setValue(100)
+                break
+            else:
+                ok_events += 1
+                self.success_lcd.display(ok_events)
 
         self.logs_text.append(f"All routes established: {ok_events} times. Couldn't establish "
-                              f"route: {bad_events} times")
+                                      f"route: {bad_events} times")
 
         if bad_events > 0:
-            self.result_text.setText(f"Pole jest blokowalne. Podczas symulacji zostało zablokowane {bad_events} razy")
+            self.result_text.setText(f"Pole jest blokowalne.")
         else:
             self.result_text.setText(f"Dla danej próby pole jest nieblokowalne w szerokim sensie! "
                                      f"Aby sie upewnić, możesz zwiększyć ilość przejśc algorytmu!")
-        # print(f"All routes established: {ok_events} times. Couldn't establish route: {bad_events} times")
-        # --------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def normalize_bar(value):
+        """
+        Zajmuje się normalizacją `progress baru` do 100.
+        @param value: ilość przejść algorytmu
+        @return: zwraca znormalizowaną liczbę
+        """
+        if value < 100:
+            return 99
+        elif value == 100:
+            return 1
+        else:
+            return 100 / value
+
+    def show_help(self):
+        """
+        Funkcja wywoływana poprzez kliknięcie przycisku `How to define topology?'
+
+        Umożliwia wyświetlenie krótkiej instrukcji definiowania topologii.
+        """
+        with open("files/README.txt", 'r') as file:
+            help_file = file.read()
+        self.logs_text.setPlainText(help_file)
+        self.logs_text.update()
 
 
 if __name__ == "__main__":
