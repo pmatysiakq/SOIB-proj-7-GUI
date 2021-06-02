@@ -219,13 +219,13 @@ class Ui_MainWindow(object):
                                       "Program sprawdza czy zadane pole komutacyjne, zbudowane z komutatorów 2x2 "
                                       "jest polem nieblokowalnym. W celu przeprowadzenia symulacji "
                                       "zdefiniuj topologię lub kliknij przycisk \"Load topology from file\""))
-        self.result_label.setText(_translate("MainWindow", "Simulation Result"))
+        self.result_label.setText(_translate("MainWindow", "Result"))
         self.label_2.setText(_translate("MainWindow", "File Name: "))
         self.topo_from_file_button.setText(_translate("MainWindow", "Load topology from file"))
         self.start_button.setText(_translate("MainWindow", "START"))
         self.how_to_button.setText(_translate("MainWindow", "How to define topology?"))
-        self.label_3.setText(_translate("MainWindow", "Logi"))
-        self.tries_label.setText(_translate("MainWindow", "Liczba prób:"))
+        self.label_3.setText(_translate("MainWindow", "Logs"))
+        self.tries_label.setText(_translate("MainWindow", "Number of tries:"))
 
     def load_topo_from_file(self):
         """
@@ -301,7 +301,7 @@ class Ui_MainWindow(object):
         """
         topo = copy.deepcopy(topology)
         blocked = False
-        for j in range(30):
+        for j in range(60):
             blocked = False
             # Dla każdej pary (wejście, wyjście) znajdź ścieżkę
             for route in routes:
@@ -310,9 +310,9 @@ class Ui_MainWindow(object):
                 for i in range(10):
                     one_route = Route(input, output, topo)
                     done_route = one_route.do_routing(sections, topo)
-                    self.log_route(one_route)
                     # Jeżeli ścieżka została znaleziona dla danego (wejścia, wyjścia)
                     if done_route != -404:
+                        self.log_route(one_route)
                         blocked = False
                         topo = one_route.change_status(topo)
                         self.logs_text.append(f"A route has been found between input {input} and "
@@ -321,7 +321,7 @@ class Ui_MainWindow(object):
                 # Jeżeli nie udalo się zestawić ścieżki między daną parą (wejście, wyjście) spróbuj od nowa
                 else:
                     blocked = True
-                    self.logs_text.append(f"The commutation field has been blocked!: {input} - {output}")
+                    self.logs_text.append(f"------>The commutation field has been blocked!: {input} - {output}<------")
 
                 if blocked:
                     topo = copy.deepcopy(topology)
@@ -352,6 +352,7 @@ class Ui_MainWindow(object):
             bar_value += Ui_MainWindow.normalize_bar(algorithm_count)
             self.progress_bar.setValue(round(bar_value))
             routes = Ui_MainWindow.get_in_out(inputs, outputs)
+            self.logs_text.append(f"Looking for routes: {routes}")
             field_blocked = self.check_if_blocked(topology, sections, routes)
 
             if field_blocked:
@@ -362,9 +363,8 @@ class Ui_MainWindow(object):
             else:
                 ok_events += 1
                 self.success_lcd.display(ok_events)
-
-        self.logs_text.append(f"All routes established: {ok_events} times. Couldn't establish "
-                                      f"route: {bad_events} times")
+                self.logs_text.append(f"All routes established: {ok_events} times. Couldn't establish "
+                                              f"route: {bad_events} times")
 
         if bad_events > 0:
             self.result_text.setText(f"Pole jest blokowalne.")

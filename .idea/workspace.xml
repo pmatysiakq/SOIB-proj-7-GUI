@@ -2,18 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1a42c5f0-bdce-4ff7-8518-334adcb4e8e0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/examples/topology2.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/Project7_v3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Project7_v3.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/help.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mainWindow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/Route.py" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/Route.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/topology.txt" beforeDir="false" afterPath="$PROJECT_DIR$/examples/topology.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/topology2.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/topology3.txt" beforeDir="false" afterPath="$PROJECT_DIR$/examples/topology3.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/topology4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/examples/topology4.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/topology5.txt" beforeDir="false" afterPath="$PROJECT_DIR$/examples/topology5.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/untitled-2.ui" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/untitled.ui" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/files/current_topo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/files/current_topo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,11 +39,13 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Project7_v3 - BACKUP" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\TODO Elka\xx_xx_xx - SOIB - Projekt2\Project7_v3\pkg" />
+      <recent name="D:\TODO Elka\xx_xx_xx - SOIB - Projekt2\Project7_v3\files" />
       <recent name="D:\TODO Elka\xx_xx_xx - SOIB - Projekt2\Project7_v3\examples" />
     </key>
   </component>
